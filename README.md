@@ -19,6 +19,12 @@ To deploy the cluster you can use :
 
 ### Ansible
 
+#### Ansible version
+
+Ansible v2.7.0 is failing and/or produce unexpected results due to [ansible/ansible/issues/46600](https://github.com/ansible/ansible/issues/46600)
+
+#### Usage
+
     # Install dependencies from ``requirements.txt``
     sudo pip install -r requirements.txt
 
@@ -105,7 +111,7 @@ Supported Components
 --------------------
 
 -   Core
-    -   [kubernetes](https://github.com/kubernetes/kubernetes) v1.12.1
+    -   [kubernetes](https://github.com/kubernetes/kubernetes) v1.12.2
     -   [etcd](https://github.com/coreos/etcd) v3.2.18
     -   [docker](https://www.docker.com/) v18.06 (see note)
     -   [rkt](https://github.com/rkt/rkt) v1.21.0 (see Note 2)
@@ -122,7 +128,7 @@ Supported Components
     -   [cephfs-provisioner](https://github.com/kubernetes-incubator/external-storage) v2.1.0-k8s1.11
     -   [cert-manager](https://github.com/jetstack/cert-manager) v0.5.0
     -   [coredns](https://github.com/coredns/coredns) v1.2.2
-    -   [ingress-nginx](https://github.com/kubernetes/ingress-nginx) v0.19.0
+    -   [ingress-nginx](https://github.com/kubernetes/ingress-nginx) v0.20.0
 
 Note: The list of validated [docker versions](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.12.md) was updated to 1.11.1, 1.12.1, 1.13.1, 17.03, 17.06, 17.09, 18.06. The kubelet might break on docker's non-standard version numbering (it no longer uses semantic versioning). To ensure auto-updates don't break your cluster look into e.g. yum versionlock plugin or apt pin).
 
