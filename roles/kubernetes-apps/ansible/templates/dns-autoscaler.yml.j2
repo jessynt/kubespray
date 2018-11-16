@@ -13,25 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kubedns-autoscaler
+  name: dns-autoscaler
   namespace: kube-system
   labels:
-    k8s-app: kubedns-autoscaler
+    k8s-app: dns-autoscaler
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
 spec:
+  selector:
+    matchLabels:
+      k8s-app: dns-autoscaler
   template:
     metadata:
       labels:
-        k8s-app: kubedns-autoscaler
+        k8s-app: dns-autoscaler
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+        seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
     spec:
 {% if kube_version is version('v1.11.1', '>=') %}
       priorityClassName: system-cluster-critical
 {% endif %}
-      # When having win nodes in cluster without this patch, this pod cloud try to be created in windows
       nodeSelector:
         beta.kubernetes.io/os: linux
       tolerations:
@@ -44,7 +49,7 @@ spec:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
               matchLabels:
-                k8s-app: kubedns-autoscaler
+                k8s-app: dns-autoscaler
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 100
@@ -56,7 +61,7 @@ spec:
                 - "true"
       containers:
       - name: autoscaler
-        image: "{{ kubednsautoscaler_image_repo }}:{{ kubednsautoscaler_image_tag }}"
+        image: "{{ dnsautoscaler_image_repo }}:{{ dnsautoscaler_image_tag }}"
         resources:
           requests:
             cpu: "20m"
@@ -64,10 +69,17 @@ spec:
         command:
         - /cluster-proportional-autoscaler
         - --namespace=kube-system
-        - --configmap=kubedns-autoscaler
-        # Should keep target in sync with cluster/addons/dns/kubedns-controller.yaml.base
-        - --target=Deployment/kube-dns
-        - --default-params={"linear":{"nodesPerReplica":{{ kubedns_nodes_per_replica }},"min":{{ kubedns_min_replicas }}}}
+        - --default-params={"linear":{"preventSinglePointFailure":{{ dns_prevent_single_point_failure }},"coresPerReplica":{{ dns_cores_per_replica }},"nodesPerReplica":{{ dns_nodes_per_replica }},"min":{{ dns_min_replicas }}}}
         - --logtostderr=true
         - --v=2
-      serviceAccountName: cluster-proportional-autoscaler
+        - --configmap=dns-autoscaler
+{% if dns_mode in ['coredns', 'coredns_dual'] %}
+        - --target=Deployment/coredns{{ coredns_ordinal_suffix | default('') }}
+{% endif %}
+{% if dns_mode in ['kubedns', 'dnsmasq_kubedns'] %}
+        - --target=Deployment/kube-dns
+{% endif %}
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
+      serviceAccountName: dns-autoscaler

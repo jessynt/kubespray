@@ -5,7 +5,9 @@
     - etcd-secrets
     - facts
 
-- include_tasks: "gen_certs_{{ cert_management }}.yml"
+- include_tasks: "gen_certs_script.yml"
+  when:
+    - cert_management |d('script') == "script"
   tags:
     - etcd-secrets
 
@@ -59,6 +61,6 @@
 
 # After etcd cluster is assembled, make sure that
 # initial state of the cluster is in `existing`
-# state insted of `new`.
+# state instead of `new`.
 - include_tasks: refresh_config.yml
   when: is_etcd_master

@@ -137,7 +137,7 @@
     - facts
 
 - name: "Get current version of calico cluster version"
-  shell: "{{ bin_dir }}/calicoctl version  | grep 'Cluster Version' | awk '{ print $3}'"
+  shell: "{{ bin_dir }}/calicoctl version  | grep 'Cluster Version:' | awk '{ print $3}'"
   register: calico_version_on_server
   run_once: yes
   delegate_to: "{{ groups['kube-master'][0] }}"
@@ -188,11 +188,17 @@
   when: kube_proxy_mode is defined
   run_once: true
 
+- name: Stop if vault is chose
+  assert:
+    that: cert_management != 'vault'
+    msg: "Support for vault have been removed, please use 'script' or 'none'"
+  when: cert_management is defined
+  run_once: true
+
 - name: Stop if unknown cert_management
   assert:
-    that: cert_management in ['script', 'vault']
-    msg: "cert_management can only be 'script' or 'vault'"
-  when: cert_management is defined
+    that: cert_management|d('script') in ['script', 'none']
+    msg: "cert_management can only be 'script' or 'none'"
   run_once: true
 
 - name: Stop if unknown resolvconf_mode
