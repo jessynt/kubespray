@@ -1,4 +1,7 @@
 ---
+# disable upgrade cluster
+upgrade_cluster_setup: false
+
 # An experimental dev/test only dynamic volumes provisioner,
 # for PetSets. Works for kube>=v1.3 only.
 kube_hostpath_dynamic_provisioner: "false"
@@ -13,10 +16,6 @@ kube_apiserver_bind_address: 0.0.0.0
 # A port range to reserve for services with NodePort visibility.
 # Inclusive at both ends of the range.
 kube_apiserver_node_port_range: "30000-32767"
-
-# ETCD cert dir for connecting apiserver to etcd
-etcd_config_dir: /etc/ssl/etcd
-etcd_cert_dir: "{{ etcd_config_dir }}/ssl"
 
 # ETCD backend for k8s data
 kube_apiserver_storage_backend: etcd3
@@ -131,7 +130,7 @@ kube_kubeadm_scheduler_extra_args: {}
 
 ## Extra control plane host volume mounts
 ## Example:
-#apiserver_extra_volumes:
+# apiserver_extra_volumes:
 #  - name: name
 #    hostPath: /host/path
 #    mountPath: /mount/path
